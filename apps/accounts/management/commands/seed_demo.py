@@ -39,7 +39,7 @@ class Command(BaseCommand):
         User = get_user_model()
         reset = options.get('reset')
         usernames = ['admin_cliente', 'gerente', 'vendedor']
-        company_name = 'DEMO (Premium)'
+        company_name = 'Empresa Demo - Plan Premium'
         company_rut = '11111111-1'
 
         if reset:
@@ -156,6 +156,29 @@ class Command(BaseCommand):
     def _ensure_products(self, company: Company, target: int) -> list[Product]:
         rng = random.Random(42)
         categories = ['Electrónica', 'Oficina', 'Hogar', 'Outdoor', 'Computación', 'Deportes', 'Belleza']
+        name_pool = [
+            'Audífonos inalámbricos',
+            'Mouse ergonómico',
+            'Teclado mecánico',
+            'Silla gamer',
+            'Monitor ultrawide',
+            'SSD portátil',
+            'Impresora láser',
+            'Cafetera programable',
+            'Lámpara de escritorio LED',
+            'Botella térmica',
+            'Mochila para notebook',
+            'Parlante bluetooth',
+            'Cámara web HD',
+            'Router WiFi 6',
+            'Organizador de cables',
+            'Kit destornilladores de precisión',
+            'Soporte para monitor',
+            'Base refrigerante para laptop',
+            'Libreta de notas premium',
+            'Bolígrafo de acero',
+        ]
+
         existing_skus = set(
             Product.objects.filter(company=company).values_list('sku', flat=True)
         )
@@ -166,12 +189,15 @@ class Command(BaseCommand):
                 continue
             price = Decimal(rng.randint(5000, 90000))
             cost = (price * Decimal('0.6')).quantize(Decimal('0.01'))
+            base_name = name_pool[(i - 1) % len(name_pool)]
+            suffix = f" #{(i - 1) // len(name_pool) + 1}" if i > len(name_pool) else ''
+            name = f"{base_name}{suffix}"
             products_to_create.append(
                 Product(
                     company=company,
                     sku=sku,
-                    name=f'Producto {i}',
-                    description=f'Producto demo número {i}',
+                    name=name,
+                    description=f'{name} - artículo de demostración',
                     price=price,
                     cost=cost,
                     category=rng.choice(categories),

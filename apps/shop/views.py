@@ -40,26 +40,6 @@ def dashboard(request):
     sales_today = Sale.objects.filter(company=company, created_at__date=today)
     pending_orders = Order.objects.filter(company=company, status=Order.STATUS_PENDING)
 
-    role_quick_links = {
-        User.ROLE_GERENTE: [
-            {'label': 'Proveedores', 'url_name': 'suppliers_list'},
-            {'label': 'Inventario', 'url_name': 'inventory_by_branch'},
-            {'label': 'Productos', 'url_name': 'shop-products'},
-        ],
-        User.ROLE_VENDEDOR: [
-            {'label': 'Productos', 'url_name': 'shop-products'},
-            {'label': 'Carro', 'url_name': 'shop-cart'},
-        ],
-        User.ROLE_ADMIN_CLIENTE: [
-            {'label': 'Productos', 'url_name': 'shop-products'},
-            {'label': 'Proveedores', 'url_name': 'suppliers_list'},
-            {'label': 'Inventario', 'url_name': 'inventory_by_branch'},
-        ],
-        User.ROLE_SUPER_ADMIN: [
-            {'label': 'Productos', 'url_name': 'shop-products'},
-        ],
-    }
-
     context = {
         'company': company,
         'kpis': {
@@ -71,7 +51,6 @@ def dashboard(request):
             'sales_today': sales_today.count(),
             'pending_orders': pending_orders.count(),
         },
-        'quick_links': role_quick_links.get(getattr(request.user, 'role', ''), []),
         'has_data': products.exists() or suppliers.exists() or inventories.exists(),
     }
     return render(request, 'dashboard.html', context)

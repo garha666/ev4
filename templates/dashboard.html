@@ -74,14 +74,4 @@
   </div>
 {% endif %}
 
-{% if quick_links %}
-  <div class="card shadow-sm">
-    <div class="card-header">Accesos rápidos</div>
-    <div class="card-body d-flex flex-wrap gap-2">
-      {% for link in quick_links %}
-        <a href="{% url link.url_name %}" class="btn btn-outline-primary">{{ link.label }}</a>
-      {% endfor %}
-    </div>
-  </div>
-{% endif %}
 {% endblock %}

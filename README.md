@@ -20,7 +20,7 @@ python manage.py runserver
 ```
 
 ## Datos de demo
-- Ejecuta `python manage.py seed_demo --reset` para recrear datos completos (company DEMO plan Premium con inventario completo).
+- Ejecuta `python manage.py seed_demo --reset` para recrear datos completos (empresa demo con plan Premium e inventario completo).
 - Parámetros útiles: `--products 200 --suppliers 30 --branches 5 --purchases 80 --sales 180 --orders 120` (valores por defecto).
 - Usuarios de prueba (todos con compañía asignada):
   - `admin_cliente` / `demo12345`
