@@ -1,6 +1,8 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
+from django.shortcuts import render, redirect
+
 from apps.inventory.models import Product
 from apps.sales.models import CartItem
 
@@ -21,13 +23,18 @@ def dashboard(request):
     return render(request, 'dashboard.html')
 
 
+@login_required
 def product_list(request):
-    products = Product.objects.all()
+    products = Product.objects.filter(company=request.user.company)
     return render(request, 'shop/products.html', {'products': products})
 
 
+@login_required
 def product_detail(request, pk):
-    product = Product.objects.get(pk=pk)
+    try:
+        product = Product.objects.get(pk=pk, company=request.user.company)
+    except Product.DoesNotExist as exc:
+        raise Http404 from exc
     return render(request, 'shop/product_detail.html', {'product': product})
 
 
@@ -40,3 +47,9 @@ def cart_view(request):
 @login_required
 def checkout_view(request):
     return render(request, 'shop/checkout.html')
+
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('login')

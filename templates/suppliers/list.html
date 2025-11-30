@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h3 class="mb-0">Proveedores</h3>
+    <p class="text-muted mb-0">Listado de proveedores de tu compañía.</p>
+  </div>
+  {% if can_create %}
+    <a class="btn btn-primary" href="{% url 'suppliers_create' %}">Crear proveedor</a>
+  {% endif %}
+</div>
+{% if suppliers %}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nombre</th>
+          <th>RUT</th>
+          <th>Contacto</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for supplier in suppliers %}
+          <tr>
+            <td class="fw-semibold">{{ supplier.name }}</td>
+            <td><span class="badge text-bg-secondary">{{ supplier.rut }}</span></td>
+            <td>{{ supplier.contact_name }}</td>
+            <td>{{ supplier.contact_email }}</td>
+            <td>{{ supplier.contact_phone }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="alert alert-info">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h6 class="mb-1">No hay proveedores cargados</h6>
+        <p class="mb-0">Aún no se han cargado proveedores para tu compañía.</p>
+      </div>
+      {% if can_create %}
+        <a class="btn btn-outline-primary" href="{% url 'suppliers_create' %}">Crear proveedor</a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

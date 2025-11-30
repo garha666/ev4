@@ -19,6 +19,14 @@ python manage.py seed_demo
 python manage.py runserver
 ```
 
+## Datos de demo
+- Ejecuta `python manage.py seed_demo --reset` para recrear datos completos (company, sucursales, productos, proveedores, inventario).
+- Usuarios de prueba:
+  - `admin_cliente` / `demo12345`
+  - `gerente` / `demo12345`
+  - `vendedor` / `demo12345`
+- Login por sesión: `http://localhost:8000/login/`
+
 ## JWT
 - POST `/api/token/` con `username` y `password` -> access/refresh
 - POST `/api/token/refresh/` -> nuevo access
