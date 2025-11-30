@@ -9,9 +9,16 @@
   <div class="alert alert-warning">Asocia el usuario a una compañía para ver productos.</div>
 {% endif %}
 
-<div class="row">
+<div class="row mb-3">
+  <div class="col-md-6">
+    <label class="form-label">Filtrar productos</label>
+    <input type="text" id="product-search" class="form-control" placeholder="Busca por nombre o descripción" autocomplete="off">
+  </div>
+</div>
+
+<div class="row" id="product-grid">
   {% for product in products %}
-  <div class="col-md-4">
+  <div class="col-md-4 product-card" data-name="{{ product.name|lower }}" data-description="{{ product.description|lower }}">
     <div class="card mb-3 h-100 shadow-sm">
       <div class="card-body d-flex flex-column">
         <h5 class="card-title">{{ product.name }}</h5>
@@ -27,4 +34,23 @@
   </div>
   {% endfor %}
 </div>
+
+<script>
+const productSearch = document.getElementById('product-search');
+const productCards = document.querySelectorAll('#product-grid .product-card');
+
+function filterProducts() {
+  const term = productSearch.value.trim().toLowerCase();
+  productCards.forEach(card => {
+    const name = card.dataset.name;
+    const description = card.dataset.description;
+    const matches = !term || name.includes(term) || description.includes(term);
+    card.classList.toggle('d-none', !matches);
+  });
+}
+
+if (productSearch) {
+  productSearch.addEventListener('input', filterProducts);
+}
+</script>
 {% endblock %}

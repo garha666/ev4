@@ -6,6 +6,13 @@ class SupplierForm(forms.ModelForm):
     class Meta:
         model = Supplier
         fields = ['name', 'rut', 'contact_name', 'contact_email', 'contact_phone']
+        labels = {
+            'name': 'Nombre',
+            'rut': 'RUT',
+            'contact_name': 'Nombre de contacto',
+            'contact_email': 'Correo de contacto',
+            'contact_phone': 'Teléfono de contacto',
+        }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'rut': forms.TextInput(attrs={'class': 'form-control'}),

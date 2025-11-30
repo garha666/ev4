@@ -25,6 +25,12 @@
   </form>
 
   {% if inventories %}
+    <div class="row mb-2">
+      <div class="col-md-6">
+        <label class="form-label">Filtrar inventario</label>
+        <input id="inventory-filter" type="text" class="form-control" placeholder="Busca por producto o SKU" autocomplete="off">
+      </div>
+    </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-light">
@@ -37,7 +43,7 @@
         </thead>
         <tbody>
           {% for item in inventories %}
-            <tr>
+            <tr class="inventory-row">
               <td class="fw-semibold">{{ item.product.name }}</td>
               <td><span class="badge text-bg-secondary">{{ item.product.sku }}</span></td>
               <td>
@@ -62,4 +68,21 @@
     <p class="mb-0">Crea una sucursal para comenzar a registrar inventario.</p>
   </div>
 {% endif %}
+
+<script>
+const inventoryFilterInput = document.getElementById('inventory-filter');
+const inventoryRows = document.querySelectorAll('.inventory-row');
+
+function filterInventory() {
+  const term = inventoryFilterInput.value.trim().toLowerCase();
+  inventoryRows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.classList.toggle('d-none', term && !text.includes(term));
+  });
+}
+
+if (inventoryFilterInput) {
+  inventoryFilterInput.addEventListener('input', filterInventory);
+}
+</script>
 {% endblock %}

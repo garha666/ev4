@@ -19,31 +19,9 @@
         <div class="d-flex flex-wrap gap-2">
           <button class="btn btn-outline-primary" id="copy-access" disabled>Copiar access</button>
           <button class="btn btn-outline-primary" id="copy-refresh" disabled>Copiar refresh</button>
-          <button class="btn btn-outline-secondary" id="refresh-btn" data-username="{{ username }}" data-bs-toggle="modal" data-bs-target="#tokenModal">Obtener/renovar JWT</button>
+          <button class="btn btn-outline-secondary" id="refresh-btn" data-username="{{ username }}">Obtener/renovar JWT</button>
           <button class="btn btn-outline-danger" id="clear-tokens" disabled>Limpiar</button>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="tokenModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Obtener JWT</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <p class="mb-3">Se solicitará un nuevo token con el usuario <strong>{{ username }}</strong>.</p>
-        <div class="mb-3">
-          <label class="form-label">Contraseña</label>
-          <input type="password" class="form-control" id="token-password" placeholder="Ingresa tu contraseña" required>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" id="confirm-token">Solicitar</button>
       </div>
     </div>
   </div>
@@ -55,8 +33,7 @@ const tokenAlert = document.getElementById('token-alert');
 const copyAccessBtn = document.getElementById('copy-access');
 const copyRefreshBtn = document.getElementById('copy-refresh');
 const clearBtn = document.getElementById('clear-tokens');
-const modalEl = document.getElementById('tokenModal');
-const modalInstance = modalEl ? new bootstrap.Modal(modalEl) : null;
+const refreshBtn = document.getElementById('refresh-btn');
 
 function getStoredTokens() {
   return {
@@ -99,29 +76,28 @@ clearBtn.addEventListener('click', () => {
   refreshState();
 });
 
-const confirmBtn = document.getElementById('confirm-token');
-confirmBtn.addEventListener('click', async () => {
-  const passwordField = document.getElementById('token-password');
-  const password = passwordField.value;
-  const username = document.getElementById('refresh-btn').dataset.username;
-  if (!password) {
-    showTokenAlert('warning', 'Ingresa la contraseña para obtener el token.');
-    return;
-  }
+function getCSRFToken() {
+  const csrfCookie = document.cookie.split(';').find((cookie) => cookie.trim().startsWith('csrftoken='));
+  return csrfCookie ? csrfCookie.split('=')[1] : '';
+}
+
+refreshBtn.addEventListener('click', async () => {
+  const csrfToken = getCSRFToken();
   try {
-    const res = await fetch('/api/token/', {
+    const res = await fetch('/api/token/session/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      credentials: 'same-origin',
     });
     const data = await res.json();
     if (res.ok) {
       localStorage.setItem('access', data.access);
       localStorage.setItem('refresh', data.refresh);
-      showTokenAlert('success', 'Nuevo token almacenado en localStorage.');
+      showTokenAlert('success', 'Tokens generados y almacenados en localStorage.');
       refreshState();
-      passwordField.value = '';
-      if (modalInstance) modalInstance.hide();
     } else {
       showTokenAlert('danger', data.detail || 'No se pudo obtener el token.');
     }

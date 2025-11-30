@@ -3,7 +3,11 @@
 <div class="d-flex justify-content-between align-items-start mb-3">
   <div>
     <h3 class="mb-0">Proveedores</h3>
-    <p class="text-muted mb-0">Listado de proveedores de tu compañía.</p>
+    <p class="text-muted mb-1">Listado de proveedores de tu compañía.</p>
+    <div class="input-group input-group-sm">
+      <span class="input-group-text">Filtrar</span>
+      <input id="supplier-filter" type="text" class="form-control" placeholder="Busca por nombre, contacto o RUT" autocomplete="off">
+    </div>
   </div>
   {% if can_create %}
     <a class="btn btn-primary" href="{% url 'suppliers_create' %}">Crear proveedor</a>
@@ -23,7 +27,7 @@
       </thead>
       <tbody>
         {% for supplier in suppliers %}
-          <tr>
+          <tr class="supplier-row">
             <td class="fw-semibold">{{ supplier.name }}</td>
             <td><span class="badge text-bg-secondary">{{ supplier.rut }}</span></td>
             <td>{{ supplier.contact_name }}</td>
@@ -47,4 +51,21 @@
     </div>
   </div>
 {% endif %}
+
+<script>
+const supplierFilterInput = document.getElementById('supplier-filter');
+const supplierRows = document.querySelectorAll('.supplier-row');
+
+function filterSuppliers() {
+  const term = supplierFilterInput.value.trim().toLowerCase();
+  supplierRows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.classList.toggle('d-none', term && !text.includes(term));
+  });
+}
+
+if (supplierFilterInput) {
+  supplierFilterInput.addEventListener('input', filterSuppliers);
+}
+</script>
 {% endblock %}
