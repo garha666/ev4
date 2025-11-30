@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h3 class="mb-0">Inventario por sucursal</h3>
+    <p class="text-muted mb-0">Revisa el stock disponible por sucursal y punto de reposición.</p>
+  </div>
+</div>
+
+{% if branches %}
+  <form method="get" class="row g-3 align-items-end mb-3">
+    <div class="col-sm-6 col-md-4">
+      <label class="form-label">Sucursal</label>
+      <select name="branch" class="form-select" onchange="this.form.submit()">
+        {% for branch in branches %}
+          <option value="{{ branch.id }}" {% if selected_branch and branch.id == selected_branch.id %}selected{% endif %}>{{ branch.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if selected_branch %}
+      <div class="col-sm-6 col-md-8 text-sm-end">
+        <p class="mb-0 text-muted">Dirección: {{ selected_branch.address }} | Teléfono: {{ selected_branch.phone }}</p>
+      </div>
+    {% endif %}
+  </form>
+
+  {% if inventories %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Producto</th>
+            <th>SKU</th>
+            <th>Stock</th>
+            <th>Punto de reposición</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in inventories %}
+            <tr>
+              <td class="fw-semibold">{{ item.product.name }}</td>
+              <td><span class="badge text-bg-secondary">{{ item.product.sku }}</span></td>
+              <td>
+                {% if item.stock <= item.reorder_point %}
+                  <span class="badge text-bg-danger">{{ item.stock }}</span>
+                {% else %}
+                  <span class="badge text-bg-success">{{ item.stock }}</span>
+                {% endif %}
+              </td>
+              <td>{{ item.reorder_point }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No hay inventario cargado para esta sucursal.</div>
+  {% endif %}
+{% else %}
+  <div class="alert alert-warning">
+    <h6 class="mb-1">Aún no tienes sucursales configuradas</h6>
+    <p class="mb-0">Crea una sucursal para comenzar a registrar inventario.</p>
+  </div>
+{% endif %}
+{% endblock %}
