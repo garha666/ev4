@@ -1,0 +1,58 @@
+[
+  {
+    "model": "accounts.user",
+    "pk": 1,
+    "fields": {
+      "username": "fixture_super",
+      "email": "super@example.com",
+      "role": "super_admin",
+      "rut": "99999999-9",
+      "password": "pbkdf2_sha256$600000$wERrL6igAcsYAvOHfE7dpW$aSsdCh/AMh1GJXm2T6L09jw+dflMbZJQW7IGN34cg30=",
+      "is_staff": true,
+      "is_superuser": true,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 2,
+    "fields": {
+      "username": "fixture_admin",
+      "email": "admin@example.com",
+      "role": "admin_cliente",
+      "rut": "11111111-1",
+      "password": "pbkdf2_sha256$600000$wERrL6igAcsYAvOHfE7dpW$aSsdCh/AMh1GJXm2T6L09jw+dflMbZJQW7IGN34cg30=",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 3,
+    "fields": {
+      "username": "fixture_gerente",
+      "email": "gerente@example.com",
+      "role": "gerente",
+      "rut": "22222222-2",
+      "password": "pbkdf2_sha256$600000$wERrL6igAcsYAvOHfE7dpW$aSsdCh/AMh1GJXm2T6L09jw+dflMbZJQW7IGN34cg30=",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 4,
+    "fields": {
+      "username": "fixture_vendedor",
+      "email": "vendedor@example.com",
+      "role": "vendedor",
+      "rut": "33333333-3",
+      "password": "pbkdf2_sha256$600000$wERrL6igAcsYAvOHfE7dpW$aSsdCh/AMh1GJXm2T6L09jw+dflMbZJQW7IGN34cg30=",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true
+    }
+  }
+]

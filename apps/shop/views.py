@@ -14,7 +14,8 @@ from apps.accounts.models import User
 from apps.accounts.serializers import UserSerializer
 from rest_framework.exceptions import ValidationError
 
-from apps.core.models import Company, Subscription
+from apps.core.forms import PlanForm, SubscriptionAdminForm
+from apps.core.models import Company, Plan, PlanFeature, Subscription
 from apps.inventory.models import Branch, Inventory, InventoryMovement, Product, Supplier
 from apps.inventory.web_views import _guard_role
 from apps.sales.models import CartItem, Order, OrderItem, Sale
@@ -298,30 +299,35 @@ def subscription_detail(request):
 
     company = getattr(request.user, 'company', None)
     subscription = getattr(company, 'subscription', None) if company else None
+    plans = Plan.objects.filter(is_active=True).prefetch_related('features').order_by('monthly_price')
+    plan_features = PlanFeature.objects.filter(plans__in=plans).distinct().order_by('label')
 
     if request.method == 'POST':
         if not company:
             messages.error(request, 'Asocia el usuario a una compañía antes de comprar una suscripción.')
             return redirect('subscription_detail')
 
-        plan_name = request.POST.get('plan', Subscription.PLAN_BASICO)
+        plan_id = request.POST.get('plan')
+        plan = get_object_or_404(plans, pk=plan_id)
         start_date = timezone.now().date()
         end_date = start_date + timedelta(days=365)
         subscription, _ = Subscription.objects.update_or_create(
             company=company,
             defaults={
-                'plan_name': plan_name,
+                'plan': plan,
                 'start_date': start_date,
                 'end_date': end_date,
-                'active': True,
+                'status': Subscription.STATUS_ACTIVE,
+                'canceled_at': None,
             },
         )
-        messages.success(request, 'Suscripción activada automáticamente para tu compañía.')
+        messages.success(request, f'Suscripción al plan {plan.name} activada automáticamente para tu compañía.')
         return redirect('subscription_detail')
 
     context = {
         'subscription': subscription,
-        'plan_choices': Subscription.PLAN_CHOICES,
+        'plans': plans,
+        'plan_features': plan_features,
         'is_super_admin': request.user.role == User.ROLE_SUPER_ADMIN,
     }
     return render(request, 'subscription/detail.html', context)
@@ -333,15 +339,110 @@ def super_admin_dashboard(request):
     if denial:
         return denial
 
-    companies = Company.objects.all().prefetch_related('users')
+    companies = Company.objects.all().prefetch_related('users', 'subscription__plan')
     user_count = User.objects.count()
-    active_subscriptions = Subscription.objects.filter(active=True).count()
+    active_subscriptions = Subscription.objects.filter(status=Subscription.STATUS_ACTIVE).count()
+    plan_count = Plan.objects.count()
     context = {
         'companies': companies,
         'user_count': user_count,
         'active_subscriptions': active_subscriptions,
+        'plan_count': plan_count,
     }
     return render(request, 'super_admin/dashboard.html', context)
+
+
+@login_required
+def super_admin_plans(request):
+    denial = _guard_role(request, {User.ROLE_SUPER_ADMIN})
+    if denial:
+        return denial
+
+    plans = Plan.objects.prefetch_related('features').order_by('monthly_price')
+    features = PlanFeature.objects.all().order_by('label')
+    form = PlanForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Plan creado correctamente.')
+        return redirect('super_admin_plans')
+
+    context = {
+        'plans': plans,
+        'features': features,
+        'form': form,
+    }
+    return render(request, 'super_admin/plans.html', context)
+
+
+@login_required
+def super_admin_plan_edit(request, pk):
+    denial = _guard_role(request, {User.ROLE_SUPER_ADMIN})
+    if denial:
+        return denial
+
+    plan = get_object_or_404(Plan, pk=pk)
+    form = PlanForm(request.POST or None, instance=plan)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Plan actualizado correctamente.')
+        return redirect('super_admin_plans')
+
+    return render(request, 'super_admin/plan_form.html', {'form': form, 'plan': plan})
+
+
+@login_required
+def super_admin_plan_delete(request, pk):
+    denial = _guard_role(request, {User.ROLE_SUPER_ADMIN})
+    if denial:
+        return denial
+
+    plan = get_object_or_404(Plan, pk=pk)
+    if request.method == 'POST':
+        if plan.subscriptions.exists():
+            messages.error(request, 'No puedes eliminar un plan con suscripciones asociadas.')
+        else:
+            plan.delete()
+            messages.success(request, 'Plan eliminado.')
+        return redirect('super_admin_plans')
+    return render(request, 'super_admin/plan_delete.html', {'plan': plan})
+
+
+@login_required
+def super_admin_subscriptions(request):
+    denial = _guard_role(request, {User.ROLE_SUPER_ADMIN})
+    if denial:
+        return denial
+
+    subscriptions = Subscription.objects.select_related('company', 'plan').all()
+    form = SubscriptionAdminForm(request.POST or None)
+
+    if request.method == 'POST':
+        cancel_id = request.POST.get('cancel_id')
+        if cancel_id:
+            subscription = get_object_or_404(Subscription, pk=cancel_id)
+            subscription.cancel()
+            messages.success(request, f'Suscripción de {subscription.company} cancelada.')
+            return redirect('super_admin_subscriptions')
+        if form.is_valid():
+            cleaned = form.cleaned_data
+            subscription, _ = Subscription.objects.update_or_create(
+                company=cleaned['company'],
+                defaults={
+                    'plan': cleaned['plan'],
+                    'start_date': cleaned['start_date'],
+                    'end_date': cleaned['end_date'],
+                    'status': cleaned['status'],
+                    'canceled_at': None,
+                },
+            )
+            messages.success(request, 'Suscripción asignada/actualizada correctamente.')
+            return redirect('super_admin_subscriptions')
+
+    context = {
+        'subscriptions': subscriptions,
+        'form': form,
+    }
+    return render(request, 'super_admin/subscriptions.html', context)
 
 
 @login_required

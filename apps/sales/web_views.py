@@ -16,7 +16,7 @@ from .services import create_sale
 @login_required
 def sales_list(request):
     allowed_roles = {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN, User.ROLE_VENDEDOR}
-    denial = _guard_role(request, allowed_roles)
+    denial = _guard_role(request, allowed_roles, required_feature='sales')
     if denial:
         return denial
 
@@ -64,7 +64,7 @@ def sales_list(request):
 @login_required
 def pos_new_sale(request):
     allowed_roles = {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_VENDEDOR, User.ROLE_SUPER_ADMIN}
-    denial = _guard_role(request, allowed_roles)
+    denial = _guard_role(request, allowed_roles, required_feature='pos')
     if denial:
         return denial
 
