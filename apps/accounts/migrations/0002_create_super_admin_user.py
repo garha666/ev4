@@ -1,4 +1,3 @@
-from django.contrib.auth.hashers import make_password
 from django.db import migrations
 
 
@@ -9,17 +8,17 @@ def create_super_admin_user(apps, schema_editor):
         defaults={
             'email': 'super_admin@example.com',
             'rut': '99999999-9',
-            'role': 'super_admin',
+            'role': User.ROLE_SUPER_ADMIN,
             'is_staff': True,
             'is_superuser': True,
         },
     )
-    user.role = 'super_admin'
+    user.role = User.ROLE_SUPER_ADMIN
     user.email = 'super_admin@example.com'
     user.rut = '99999999-9'
     user.is_staff = True
     user.is_superuser = True
-    user.password = make_password('1234')
+    user.set_password('1234')
     user.save()
 
 
