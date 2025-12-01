@@ -354,7 +354,7 @@ def super_admin_dashboard(request):
         return denial
 
     companies = Company.objects.all().prefetch_related('users', 'subscription__plan')
-    user_count = User.objects.count()
+    user_count = User.objects.filter(role=User.ROLE_ADMIN_CLIENTE).count()
     active_subscriptions = Subscription.objects.filter(status=Subscription.STATUS_ACTIVE).count()
     plan_count = Plan.objects.count()
     context = {
@@ -465,7 +465,7 @@ def super_admin_users(request):
     if denial:
         return denial
 
-    users = User.objects.select_related('company').order_by('date_joined')
+    users = User.objects.select_related('company').filter(role=User.ROLE_ADMIN_CLIENTE).order_by('date_joined')
     context = {
         'users': users,
         'total_users': users.count(),
