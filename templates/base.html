@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+{% load plan_tags %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container-fluid">
     <a class="navbar-brand" href="{% url 'dashboard' %}">ERP</a>
@@ -17,36 +18,56 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         {% if user.is_authenticated %}
             {% with role=user.role|default:'' %}
+                {% plan_allows_feature 'inventory' as can_inventory %}
+                {% plan_allows_feature 'sales' as can_sales %}
+                {% plan_allows_feature 'reports' as can_reports %}
+                {% plan_allows_feature 'pos' as can_pos %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
                 {% if role == 'admin_cliente' or role == 'super_admin' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'suppliers_list' %}">Proveedores</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'inventory_by_branch' %}">Inventario</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'purchase_create' %}">Compras</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'sales_list' %}">Ventas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Órdenes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'report_stock' %}">Reporte stock</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'report_suppliers' %}">Reporte proveedores</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'branches_list' %}">Sucursales</a></li>
+                    {% if can_inventory %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'suppliers_list' %}">Proveedores</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'inventory_by_branch' %}">Inventario</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'purchase_create' %}">Compras</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'branches_list' %}">Sucursales</a></li>
+                    {% endif %}
+                    {% if can_sales %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'sales_list' %}">Ventas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Órdenes</a></li>
+                    {% endif %}
+                    {% if can_reports %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'report_stock' %}">Reporte stock</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'report_suppliers' %}">Reporte proveedores</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'subscription_detail' %}">Suscripción</a></li>
                     {% if role == 'super_admin' %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'super_admin_dashboard' %}">Super Admin</a></li>
                     {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'user_create' %}">Usuarios (crear)</a></li>
                 {% elif role == 'gerente' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'suppliers_list' %}">Proveedores</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'inventory_by_branch' %}">Inventario</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'purchase_create' %}">Compras</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'sales_list' %}">Ventas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Órdenes</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'report_stock' %}">Reporte stock</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'report_suppliers' %}">Reporte proveedores</a></li>
+                    {% if can_inventory %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'suppliers_list' %}">Proveedores</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'inventory_by_branch' %}">Inventario</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'purchase_create' %}">Compras</a></li>
+                    {% endif %}
+                    {% if can_sales %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'sales_list' %}">Ventas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Órdenes</a></li>
+                    {% endif %}
+                    {% if can_reports %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'report_stock' %}">Reporte stock</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'report_suppliers' %}">Reporte proveedores</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'subscription_detail' %}">Suscripción</a></li>
                 {% elif role == 'vendedor' %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
+                    {% if can_inventory %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'shop-cart' %}">Carro</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'pos_new_sale' %}">POS</a></li>
+                    {% if can_pos %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'pos_new_sale' %}">POS</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Mis órdenes</a></li>
                 {% endif %}
             {% endwith %}

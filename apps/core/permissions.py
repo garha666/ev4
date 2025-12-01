@@ -1,5 +1,6 @@
 from rest_framework.permissions import BasePermission
-from apps.core.models import Subscription
+
+from apps.core.access import plan_allows
 
 
 class IsActive(BasePermission):
@@ -15,8 +16,4 @@ class IsSuperAdmin(BasePermission):
 
 class CompanyPlanAllowsReports(BasePermission):
     def has_permission(self, request, view):
-        user = request.user
-        if not user or not user.is_authenticated or not user.company:
-            return False
-        subscription = getattr(user.company, 'subscription', None)
-        return bool(subscription and subscription.reports_enabled and subscription.active)
+        return plan_allows(request.user, 'reports')

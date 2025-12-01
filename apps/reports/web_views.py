@@ -1,22 +1,24 @@
 from django.contrib import messages
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
+from django.db.models import Count, Max
+
 from apps.accounts.models import User
+from apps.core.access import plan_allows
 from apps.inventory.models import Branch, Inventory, Supplier
 from apps.inventory.web_views import _guard_role
-from django.db.models import Count, Max
 
 
 @login_required
 def stock_report(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN}, required_feature='reports')
     if denial:
         return denial
 
     company = request.user.company
-    subscription = getattr(company, 'subscription', None)
-    reports_enabled = bool(subscription and subscription.reports_enabled and subscription.active)
+    reports_enabled = plan_allows(request.user, 'reports')
     if not reports_enabled:
         messages.warning(request, 'Tu plan no permite ver reportes de stock. Mejora el plan para habilitarlos.')
 
@@ -37,13 +39,12 @@ def stock_report(request):
 
 @login_required
 def suppliers_report(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN}, required_feature='reports')
     if denial:
         return denial
 
     company = request.user.company
-    subscription = getattr(company, 'subscription', None)
-    reports_enabled = bool(subscription and subscription.reports_enabled and subscription.active)
+    reports_enabled = plan_allows(request.user, 'reports')
     if not reports_enabled:
         messages.warning(request, 'Tu plan no permite ver reportes de proveedores. Mejora el plan para habilitarlos.')
 

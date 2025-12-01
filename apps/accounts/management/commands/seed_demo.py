@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-from apps.core.models import Company, Subscription
+from apps.core.models import Company, Plan, PlanFeature, Subscription
 from apps.inventory.models import (
     Branch,
     Inventory,
@@ -40,14 +40,14 @@ class Command(BaseCommand):
         reset = options.get('reset')
         additional_specs = [
             {
-                'company': ('Empresa Demo - Plan Básico', '55555555-5', Subscription.PLAN_BASICO),
+                'company': ('Empresa Demo - Plan Básico', '55555555-5', 'BASICO'),
                 'users': [
                     ('admin_basico', User.ROLE_ADMIN_CLIENTE, 'admin_basico@example.com', '55555555-5'),
                     ('gerente_basico', User.ROLE_GERENTE, 'gerente_basico@example.com', '66666666-6'),
                 ],
             },
             {
-                'company': ('Empresa Demo - Plan Estándar', '77777777-7', Subscription.PLAN_ESTANDAR),
+                'company': ('Empresa Demo - Plan Estándar', '77777777-7', 'ESTANDAR'),
                 'users': [
                     ('admin_estandar', User.ROLE_ADMIN_CLIENTE, 'admin_estandar@example.com', '77777777-7'),
                     ('gerente_estandar', User.ROLE_GERENTE, 'gerente_estandar@example.com', '88888888-8'),
@@ -65,6 +65,7 @@ class Command(BaseCommand):
             self._reset_demo_data(all_company_ruts, usernames)
 
         with transaction.atomic():
+            self._ensure_seed_plans()
             super_admin = self._ensure_super_admin(User)
             company = self._ensure_company(company_name, company_rut)
             self._ensure_subscription(company)
@@ -106,6 +107,34 @@ class Command(BaseCommand):
         CartItem.objects.filter(user__username__in=usernames).delete()
         get_user_model().objects.filter(username__in=usernames).delete()
 
+    def _ensure_seed_plans(self):
+        feature_specs = {
+            'inventory': 'Inventario y compras',
+            'sales': 'Ventas y órdenes',
+            'orders': 'Checkout',
+            'pos': 'POS',
+            'reports': 'Reportes',
+            'user_management': 'Gestión de usuarios',
+            'branches_unlimited': 'Sucursales ilimitadas',
+        }
+        features = {}
+        for code, label in feature_specs.items():
+            feature, _ = PlanFeature.objects.get_or_create(code=code, defaults={'label': label})
+            features[code] = feature
+
+        plan_specs = [
+            ('BASICO', 'Plan Básico', 1, ['inventory', 'sales', 'orders', 'pos', 'user_management']),
+            ('ESTANDAR', 'Plan Estándar', 3, ['inventory', 'sales', 'orders', 'pos', 'reports', 'user_management']),
+            ('PREMIUM', 'Plan Premium', None, ['inventory', 'sales', 'orders', 'pos', 'reports', 'user_management', 'branches_unlimited']),
+        ]
+        for code, name, branch_limit, feature_codes in plan_specs:
+            plan, _ = Plan.objects.get_or_create(code=code, defaults={'name': name, 'branch_limit': branch_limit, 'monthly_price': 0})
+            plan.name = name
+            plan.branch_limit = branch_limit
+            plan.is_active = True
+            plan.save()
+            plan.features.set([features[fc] for fc in feature_codes])
+
     def _ensure_super_admin(self, User):
         user, _ = User.objects.get_or_create(
             username='superadmin',
@@ -133,15 +162,16 @@ class Command(BaseCommand):
             company.save(update_fields=['name'])
         return company
 
-    def _ensure_subscription(self, company: Company, plan_name: str | None = None):
-        plan = plan_name or Subscription.PLAN_PREMIUM
+    def _ensure_subscription(self, company: Company, plan_code: str | None = None):
+        plan = Plan.objects.get(code=plan_code or 'PREMIUM')
         Subscription.objects.update_or_create(
             company=company,
             defaults={
-                'plan_name': plan,
+                'plan': plan,
                 'start_date': timezone.now().date(),
                 'end_date': timezone.now().date() + timedelta(days=365),
-                'active': True,
+                'status': Subscription.STATUS_ACTIVE,
+                'canceled_at': None,
             },
         )
 
@@ -174,9 +204,9 @@ class Command(BaseCommand):
     def _ensure_additional_companies(self, User, specs):
         created = []
         for spec in specs:
-            company_name, rut, plan_name = spec['company']
+            company_name, rut, plan_code = spec['company']
             company = self._ensure_company(company_name, rut)
-            self._ensure_subscription(company, plan_name)
+            self._ensure_subscription(company, plan_code)
             users = []
             for username, role, email, user_rut in spec['users']:
                 user, _ = User.objects.get_or_create(
@@ -540,7 +570,7 @@ class Command(BaseCommand):
         suppliers = Supplier.objects.filter(company=company).count()
 
         self.stdout.write(self.style.SUCCESS('Datos de demo creados/actualizados'))
-        self.stdout.write(f'Company: {company.id} - {company.name} ({company.rut}) Plan: {company.subscription.plan_name}')
+        self.stdout.write(f'Company: {company.id} - {company.name} ({company.rut}) Plan: {company.subscription.plan.name}')
         self.stdout.write(f'Sucursales: {branches}, Productos: {products}, Proveedores: {suppliers}')
         self.stdout.write(f'Inventario: {inventory_rows} filas')
         self.stdout.write(f'Compras: {purchases} con {purchase_items} items')
@@ -563,7 +593,7 @@ class Command(BaseCommand):
         self.stdout.write(f'Superadmin: {super_admin.username} / demo12345')
         self.stdout.write('Cuentas en otros planes:')
         for extra_company, users in extra_companies:
-            plan = extra_company.subscription.plan_name if hasattr(extra_company, 'subscription') else 'SIN PLAN'
+            plan = extra_company.subscription.plan.name if hasattr(extra_company, 'subscription') else 'SIN PLAN'
             self.stdout.write(f'- {extra_company.name} ({plan})')
             for user in users:
                 self.stdout.write(f"  * {user.username} ({user.get_role_display()}) / demo12345")

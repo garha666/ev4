@@ -8,6 +8,10 @@ from . import views
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('super-admin/', views.super_admin_dashboard, name='super_admin_dashboard'),
+    path('super-admin/plans/', views.super_admin_plans, name='super_admin_plans'),
+    path('super-admin/plans/<int:pk>/edit/', views.super_admin_plan_edit, name='super_admin_plan_edit'),
+    path('super-admin/plans/<int:pk>/delete/', views.super_admin_plan_delete, name='super_admin_plan_delete'),
+    path('super-admin/subscriptions/', views.super_admin_subscriptions, name='super_admin_subscriptions'),
     path('shop/products/', views.product_list, name='shop-products'),
     path('shop/products/<int:pk>/', views.product_detail, name='shop-product-detail'),
     path('shop/cart/add/', views.cart_add_view, name='cart_add'),

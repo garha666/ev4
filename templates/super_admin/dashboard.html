@@ -18,15 +18,16 @@
             <div class="card-body">
                 <h5 class="card-title">Suscripciones activas</h5>
                 <p class="display-6 mb-0">{{ active_subscriptions }}</p>
+                <a class="link-light" href="{% url 'super_admin_subscriptions' %}">Gestionar</a>
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card text-bg-dark h-100">
             <div class="card-body">
-                <h5 class="card-title">Cuenta super_admin</h5>
-                <p class="mb-0">Usuario: <strong>super_admin</strong></p>
-                <p class="mb-0">Contraseña: <strong>1234</strong></p>
+                <h5 class="card-title">Planes configurados</h5>
+                <p class="display-6 mb-0">{{ plan_count }}</p>
+                <a class="link-light" href="{% url 'super_admin_plans' %}">Ver planes</a>
             </div>
         </div>
     </div>
@@ -52,7 +53,7 @@
                             <td>{{ company.users.count }}</td>
                             <td>
                                 {% if company.subscription %}
-                                    {{ company.subscription.get_plan_name_display }}
+                                    {{ company.subscription.plan.name }}
                                 {% else %}
                                     Sin plan
                                 {% endif %}
