@@ -7,6 +7,7 @@ from decimal import Decimal, InvalidOperation
 from rest_framework.exceptions import ValidationError
 
 from apps.accounts.models import User
+from apps.core.access import plan_allows
 from .forms import SupplierForm, BranchForm
 from .models import Branch, Inventory, Supplier, Product, Purchase, PurchaseItem, InventoryMovement
 from .serializers import PurchaseSerializer
@@ -17,7 +18,7 @@ def _user_has_role(user, allowed_roles):
     return bool(user and user.is_authenticated and (user_role in allowed_roles or user.is_superuser))
 
 
-def _guard_role(request, allowed_roles):
+def _guard_role(request, allowed_roles, required_feature: str | None = None):
     if not _user_has_role(request.user, allowed_roles):
         messages.error(request, 'No tienes permisos para acceder a esta sección.')
         return redirect('dashboard')
@@ -26,12 +27,15 @@ def _guard_role(request, allowed_roles):
     if not request.user.company:
         messages.error(request, 'Debes pertenecer a una compañía para ver esta sección.')
         return redirect('dashboard')
+    if required_feature and not plan_allows(request.user, required_feature):
+        messages.error(request, 'Tu plan actual no habilita esta sección. Mejora el plan para acceder.')
+        return redirect('dashboard')
     return None
 
 
 @login_required
 def suppliers_list(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN}, required_feature='inventory')
     if denial:
         return denial
     suppliers = Supplier.objects.filter(company=request.user.company).order_by('name')
@@ -44,7 +48,7 @@ def suppliers_list(request):
 
 @login_required
 def supplier_create(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN}, required_feature='inventory')
     if denial:
         return denial
     if request.method == 'POST':
@@ -62,7 +66,7 @@ def supplier_create(request):
 
 @login_required
 def branches_list(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_SUPER_ADMIN}, required_feature='inventory')
     if denial:
         return denial
     branches = Branch.objects.filter(company=request.user.company).order_by('name')
@@ -71,7 +75,7 @@ def branches_list(request):
 
 @login_required
 def branch_create(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_SUPER_ADMIN}, required_feature='inventory')
     if denial:
         return denial
 
@@ -97,7 +101,11 @@ def branch_create(request):
 
 @login_required
 def inventory_by_branch(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN, User.ROLE_VENDEDOR})
+    denial = _guard_role(
+        request,
+        {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN, User.ROLE_VENDEDOR},
+        required_feature='inventory',
+    )
     if denial:
         return denial
     branches = Branch.objects.filter(company=request.user.company).order_by('name')
@@ -160,7 +168,7 @@ def _create_purchase(validated_data, user):
 
 @login_required
 def purchase_create(request):
-    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN})
+    denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE, User.ROLE_GERENTE, User.ROLE_SUPER_ADMIN}, required_feature='inventory')
     if denial:
         return denial
 
