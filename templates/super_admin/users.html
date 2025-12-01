@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-1">Usuarios</h1>
+        <p class="text-muted mb-0">Administra y revisa los usuarios asociados a cada empresa.</p>
+    </div>
+    <a class="btn btn-secondary" href="{% url 'super_admin_dashboard' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Listado ({{ total_users }})</h5>
+        <a class="btn btn-primary btn-sm" href="{% url 'admin:accounts_user_add' %}">Crear en admin</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Empresa</th>
+                        <th>Creado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td class="fw-semibold">{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-secondary text-uppercase">{{ user.get_role_display }}</span>
+                            </td>
+                            <td>{{ user.company.name|default:'Sin compañía' }}</td>
+                            <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No hay usuarios registrados.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

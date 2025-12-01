@@ -40,9 +40,9 @@
                                     <td class="fw-semibold">{{ feature.label }}</td>
                                     {% for plan in plans %}
                                         <td class="text-center">
-                                            <span class="badge {% if feature in plan.features.all %}bg-success-subtle text-success{% else %}bg-light text-muted{% endif %}">
-                                                {% if feature in plan.features.all %}Incluido{% else %}No incluido{% endif %}
-                                            </span>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" disabled {% if feature in plan.features.all %}checked{% endif %}>
+                                            </div>
                                         </td>
                                     {% endfor %}
                                 </tr>
