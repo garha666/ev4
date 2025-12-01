@@ -455,6 +455,34 @@ def super_admin_subscriptions(request):
 
 
 @login_required
+def super_admin_users(request):
+    denial = _guard_role(request, {User.ROLE_SUPER_ADMIN})
+    if denial:
+        return denial
+
+    users = User.objects.select_related('company').order_by('date_joined')
+    context = {
+        'users': users,
+        'total_users': users.count(),
+    }
+    return render(request, 'super_admin/users.html', context)
+
+
+@login_required
+def super_admin_companies(request):
+    denial = _guard_role(request, {User.ROLE_SUPER_ADMIN})
+    if denial:
+        return denial
+
+    companies = Company.objects.all().prefetch_related('users', 'subscription__plan')
+    context = {
+        'companies': companies,
+        'total_companies': companies.count(),
+    }
+    return render(request, 'super_admin/companies.html', context)
+
+
+@login_required
 def user_create_view(request):
     denial = _guard_role(request, {User.ROLE_ADMIN_CLIENTE})
     if denial:

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-1">Empresas</h1>
+        <p class="text-muted mb-0">Visualiza suscripciones y usuarios por compañía.</p>
+    </div>
+    <a class="btn btn-secondary" href="{% url 'super_admin_dashboard' %}">Volver</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Listado ({{ total_companies }})</h5>
+        <a class="btn btn-primary btn-sm" href="{% url 'admin:core_company_add' %}">Crear en admin</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>RUT</th>
+                        <th>Usuarios</th>
+                        <th>Plan</th>
+                        <th>Vigencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                        <tr>
+                            <td class="fw-semibold">{{ company.name }}</td>
+                            <td>{{ company.rut }}</td>
+                            <td><span class="badge bg-dark">{{ company.users.count }}</span></td>
+                            <td>
+                                {% if company.subscription %}
+                                    <span class="badge bg-success">{{ company.subscription.plan.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Sin plan</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if company.subscription %}
+                                    <small class="text-muted">{{ company.subscription.start_date|date:"d/m/Y" }} → {{ company.subscription.end_date|date:"d/m/Y" }}</small>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No hay empresas registradas.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
