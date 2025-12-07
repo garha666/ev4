@@ -1,8 +1,8 @@
 from rest_framework import viewsets, status, generics
+from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 from django.db import transaction
 from apps.core.permissions import IsActive
 from apps.accounts.permissions import IsAdminOrGerente, IsInternal, IsAdminOrSuper
@@ -23,10 +23,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         return [IsActive(), IsAdminOrGerente()]
 
     def get_queryset(self):
-        qs = Product.objects.all()
-        if self.action in ['list', 'retrieve']:
-            return qs
-        return qs.filter(company=self.request.user.company)
+        user = getattr(self.request, 'user', None)
+        company_id = self.request.query_params.get('company')
+        if user and user.is_authenticated and getattr(user, 'company', None):
+            return Product.objects.filter(company=user.company)
+        if company_id:
+            return Product.objects.filter(company_id=company_id)
+        return Product.objects.none()
 
     def perform_create(self, serializer):
         serializer.save(company=self.request.user.company)

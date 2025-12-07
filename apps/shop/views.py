@@ -118,11 +118,32 @@ def dashboard(request):
 
 
 @login_required
+def _resolve_company(request):
+    """
+    Determina la empresa a usar para catalogos publicos.
+    - Usuario autenticado con company: usa esa salvo que se pase ?company=<id>.
+    - Si se pasa ?company=<id>, usa esa si existe.
+    - Si solo hay una empresa en el sistema, se usa como fallback.
+    """
+    company_qs = Company.objects.all()
+    company_param = request.GET.get('company')
+    if getattr(request.user, 'is_authenticated', False) and getattr(request.user, 'company', None) and not company_param:
+        return request.user.company
+    if company_param:
+        return company_qs.filter(id=company_param).first()
+    if company_qs.count() == 1:
+        return company_qs.first()
+    return None
+
+
 def product_list(request):
-    company = getattr(request.user, 'company', None)
+    company = _resolve_company(request)
     products = Product.objects.none()
     if not company:
-        messages.warning(request, 'Asocia el usuario a una compañía para ver el catálogo de productos.')
+        if Company.objects.count() > 1:
+            messages.info(request, 'Selecciona la empresa (?company=<id>) para ver su catalogo.')
+        else:
+            messages.info(request, 'No hay una empresa activa para mostrar productos.')
     else:
         products = Product.objects.filter(company=company)
         if not products.exists():
@@ -130,17 +151,16 @@ def product_list(request):
     return render(request, 'shop/products.html', {'products': products, 'company': company})
 
 
-@login_required
 def product_detail(request, pk):
-    company = getattr(request.user, 'company', None)
+    company = _resolve_company(request)
     if not company:
-        messages.warning(request, 'No puedes ver el detalle sin pertenecer a una compañía.')
+        messages.warning(request, 'Selecciona empresa para ver el detalle de producto (?company=<id>).')
         return redirect('shop-products')
     try:
         product = Product.objects.get(pk=pk, company=company)
     except Product.DoesNotExist as exc:
         raise Http404 from exc
-    return render(request, 'shop/product_detail.html', {'product': product})
+    return render(request, 'shop/product_detail.html', {'product': product, 'company': company})
 
 
 @login_required

@@ -1,203 +1,21 @@
+{% load static %}
 <!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ERP</title>
+    <title>TemucoSoft S.A.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-      :root {
-        --bg-body: #0c1116;
-        --bg-panel: #101827;
-        --surface: #111927;
-        --surface-2: #0b1623;
-        --text-main: #f5f7fb;
-        --muted: #9fb3c8;
-        --accent: #7cf6c4;
-        --accent-strong: #3dd598;
-        --danger: #ff6b6b;
-      }
-
-      body {
-        font-family: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: radial-gradient(circle at 20% 20%, rgba(124, 246, 196, 0.08), transparent 30%),
-          radial-gradient(circle at 80% 0%, rgba(102, 126, 234, 0.12), transparent 35%),
-          var(--bg-body);
-        color: var(--text-main);
-        min-height: 100vh;
-      }
-
-      .navbar {
-        background: linear-gradient(120deg, #111927, #0b1623 55%, #0c1116);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        padding-block: 0.9rem;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-
-      .navbar-brand {
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: var(--accent) !important;
-        text-transform: uppercase;
-      }
-
-      .navbar-nav .nav-link {
-        padding: 0.55rem 0.95rem;
-        border-radius: 0.75rem;
-        color: rgba(245, 247, 251, 0.85);
-        transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
-      }
-
-      .navbar-nav .nav-link:hover,
-      .navbar-nav .nav-link:focus {
-        color: var(--accent);
-        background: rgba(124, 246, 196, 0.08);
-        transform: translateY(-1px);
-        text-decoration: none;
-      }
-
-      .navbar-nav .dropdown-menu {
-        border-radius: 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        background: #0f1724;
-        box-shadow: 0 25px 65px -35px rgba(0, 0, 0, 0.75);
-      }
-
-      .navbar-nav .dropdown-item {
-        color: var(--text-main);
-      }
-
-      .navbar-nav .dropdown-item:hover {
-        background: rgba(124, 246, 196, 0.08);
-        color: var(--accent);
-      }
-
-      .page-shell {
-        padding: 1.5rem 0 3rem;
-      }
-
-      .page-header {
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-        border-radius: 1rem;
-        padding: 1.25rem 1.5rem;
-        box-shadow: 0 20px 45px -40px rgba(0, 0, 0, 0.8);
-        gap: 1rem;
-      }
-
-      .page-header h1,
-      .page-header h2,
-      .page-header h3,
-      .page-header h5 {
-        font-weight: 800;
-        letter-spacing: -0.03em;
-      }
-
-      .page-header small,
-      .page-header p.text-muted {
-        color: var(--muted) !important;
-      }
-
-      .card {
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 1.25rem;
-        background: linear-gradient(165deg, var(--surface), var(--surface-2));
-        box-shadow: 0 24px 60px -40px rgba(0, 0, 0, 0.9);
-      }
-
-      .card-header,
-      .card-footer {
-        background: rgba(255, 255, 255, 0.02);
-        border-color: rgba(255, 255, 255, 0.05);
-        color: var(--muted);
-      }
-
-      .table thead th {
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        font-size: 0.82rem;
-        color: var(--muted);
-        border-bottom-width: 1px;
-      }
-
-      .table tbody td,
-      .table tfoot th {
-        vertical-align: middle;
-      }
-
-      .btn-primary {
-        background: linear-gradient(120deg, #38bdf8, #7cf6c4);
-        border: none;
-        color: #0c1116;
-        font-weight: 700;
-        box-shadow: 0 18px 40px -18px rgba(124, 246, 196, 0.65);
-      }
-
-      .btn-primary:hover {
-        background: linear-gradient(120deg, #67e8f9, #3dd598);
-        color: #0c1116;
-      }
-
-      .btn-outline-secondary {
-        border-color: rgba(255, 255, 255, 0.25);
-        color: var(--text-main);
-      }
-
-      .btn-outline-secondary:hover {
-        background: rgba(255, 255, 255, 0.08);
-        color: var(--accent);
-      }
-
-      .form-control,
-      .form-select {
-        background: rgba(255, 255, 255, 0.02);
-        border-color: rgba(255, 255, 255, 0.08);
-        color: var(--text-main);
-      }
-
-      .form-control:focus,
-      .form-select:focus {
-        box-shadow: 0 0 0 0.15rem rgba(124, 246, 196, 0.25);
-        border-color: rgba(124, 246, 196, 0.7);
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--text-main);
-      }
-
-      .badge {
-        padding: 0.45rem 0.7rem;
-        border-radius: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-      }
-
-      .badge.bg-secondary {
-        background: rgba(124, 246, 196, 0.2) !important;
-        color: var(--accent) !important;
-      }
-
-      .alert-info,
-      .alert-warning,
-      .alert-danger,
-      .alert-success {
-        border-radius: 0.9rem;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      .table-hover tbody tr:hover {
-        background: rgba(124, 246, 196, 0.03);
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
 </head>
 <body>
 {% load plan_tags %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% if user.role == 'super_admin' %}{% url 'super_admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">ERP</a>
+    <a class="navbar-brand" href="{% if user.role == 'super_admin' %}{% url 'super_admin_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}">TemucoSoft S.A.</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -226,15 +44,15 @@
                       <li class="nav-item"><a class="nav-link" href="{% url 'inventory_transfer' %}">Traspasos</a></li>
                       <li class="nav-item"><a class="nav-link" href="{% url 'purchase_create' %}">Compras</a></li>
                       <li class="nav-item"><a class="nav-link" href="{% url 'sales_list' %}">Ventas</a></li>
-                      <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Órdenes</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Ordenes</a></li>
                       {% if can_reports %}
                           <li class="nav-item"><a class="nav-link" href="{% url 'report_stock' %}">Reporte stock</a></li>
                           <li class="nav-item"><a class="nav-link" href="{% url 'report_suppliers' %}">Reporte proveedores</a></li>
                       {% endif %}
                       <li class="nav-item"><a class="nav-link" href="{% url 'branches_list' %}">Sucursales</a></li>
-                      <li class="nav-item"><a class="nav-link" href="{% url 'subscription_detail' %}">Suscripción</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'subscription_detail' %}">Suscripcion</a></li>
                       <li class="nav-item"><a class="nav-link" href="{% url 'shop-checkout' %}">Checkout</a></li>
-                      <li class="nav-item"><a class="nav-link" href="{% url 'user_create' %}">Gestión de usuarios</a></li>
+                      <li class="nav-item"><a class="nav-link" href="{% url 'user_create' %}">Gestion de usuarios</a></li>
                 {% elif role == 'gerente' %}
                     {% if can_inventory %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
@@ -246,13 +64,13 @@
                     {% endif %}
                     {% if can_sales %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'sales_list' %}">Ventas</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Órdenes</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Ordenes</a></li>
                     {% endif %}
                     {% if can_reports %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'report_stock' %}">Reporte stock</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'report_suppliers' %}">Reporte proveedores</a></li>
                     {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'subscription_detail' %}">Suscripción</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'subscription_detail' %}">Suscripcion</a></li>
                 {% elif role == 'vendedor' %}
                     {% if can_inventory %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'shop-products' %}">Productos</a></li>
@@ -261,7 +79,7 @@
                     {% if can_pos %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'pos_new_sale' %}">POS</a></li>
                     {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Mis órdenes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'shop_orders' %}">Mis ordenes</a></li>
                 {% endif %}
             {% endwith %}
         {% endif %}
@@ -275,7 +93,7 @@
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="{% url 'tokens' %}">Tokens API (JWT)</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesion</a></li>
               </ul>
             </li>
         {% else %}

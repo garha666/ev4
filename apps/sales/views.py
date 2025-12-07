@@ -45,6 +45,8 @@ class CartAddView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         product = serializer.validated_data['product']
         quantity = serializer.validated_data['quantity']
+        if product.company != request.user.company:
+            return Response({'detail': 'Producto no pertenece a su empresa'}, status=status.HTTP_400_BAD_REQUEST)
         cart_item, created = CartItem.objects.get_or_create(user=request.user, product=product, defaults={'quantity': quantity})
         if not created:
             cart_item.quantity = quantity
@@ -59,15 +61,18 @@ class CheckoutView(generics.GenericAPIView):
         branch_id = request.data.get('branch_id')
         branch = Branch.objects.filter(id=branch_id, company=request.user.company).first()
         if not branch:
-            return Response({'detail': 'Sucursal inválida'}, status=status.HTTP_400_BAD_REQUEST)
-        cart_items = CartItem.objects.filter(user=request.user)
+            return Response({'detail': 'Sucursal invalida'}, status=status.HTTP_400_BAD_REQUEST)
+        cart_items = CartItem.objects.filter(user=request.user, product__company=request.user.company)
         if not cart_items:
-            return Response({'detail': 'Carrito vacío'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Carrito vacio'}, status=status.HTTP_400_BAD_REQUEST)
         total = 0
         with transaction.atomic():
             order = Order.objects.create(company=request.user.company, branch=branch, customer_name=request.user.username, customer_email=request.user.email, total=0)
             for ci in cart_items:
-                inventory = Inventory.objects.select_for_update().get(company=request.user.company, branch=branch, product=ci.product)
+                try:
+                    inventory = Inventory.objects.select_for_update().get(company=request.user.company, branch=branch, product=ci.product)
+                except Inventory.DoesNotExist:
+                    return Response({'detail': 'Inventario no encontrado para el producto/sucursal'}, status=status.HTTP_400_BAD_REQUEST)
                 if inventory.stock < ci.quantity:
                     raise ValidationError('Stock insuficiente')
                 inventory.stock -= ci.quantity

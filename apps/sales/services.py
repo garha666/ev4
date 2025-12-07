@@ -12,7 +12,7 @@ def create_sale(validated_data, user):
     items_data = list(validated_data.pop('items'))
     branch = validated_data['branch']
     if branch.company != user.company:
-        raise ValidationError('Sucursal inválida')
+        raise ValidationError('Sucursal invalida')
     total = Decimal('0')
     with transaction.atomic():
         sale = Sale.objects.create(company=user.company, seller=user, **validated_data)
@@ -20,7 +20,12 @@ def create_sale(validated_data, user):
             product = item['product']
             quantity = item['quantity']
             unit_price = item['unit_price']
-            inventory = Inventory.objects.select_for_update().get(company=user.company, branch=branch, product=product)
+            if product.company != user.company:
+                raise ValidationError('Producto no pertenece a la empresa del usuario')
+            try:
+                inventory = Inventory.objects.select_for_update().get(company=user.company, branch=branch, product=product)
+            except Inventory.DoesNotExist:
+                raise ValidationError('Inventario no encontrado para el producto/sucursal')
             if inventory.stock < quantity:
                 raise ValidationError('Stock insuficiente')
             inventory.stock -= quantity
